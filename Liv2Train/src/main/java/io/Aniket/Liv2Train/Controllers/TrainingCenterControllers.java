@@ -4,7 +4,9 @@ import org.bson.Document;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
+import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +21,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import io.Aniket.Liv2Train.ExceptionsPkg.ExceptionClass;
 import io.Aniket.Liv2Train.Repositories.TrainingCenterRepositories;
+import io.Aniket.Liv2Train.TrainingCenterServices.TrainingCenterService;
 
 
 @RestController
@@ -30,9 +34,9 @@ public class TrainingCenterControllers {
 	private TrainingCenterRepositories repository;
 	
 	@Autowired
-	private MongoTemplate template;
+	private TrainingCenterService centerService;
 	
-//	@RequestMapping(value="/", method=RequestMethod.GET)
+	
 	@GetMapping(value="/")
 	public ResponseEntity<?> getAllCenters(){
 		List<TrainingCenterModel> allCenters = repository.findAll();
@@ -40,33 +44,37 @@ public class TrainingCenterControllers {
 			return new ResponseEntity<>(allCenters, HttpStatus.OK);
 		}
 		else if(allCenters.size() == 0) {
-			return new ResponseEntity<>(allCenters, HttpStatus.OK);
+			return new ResponseEntity<>("No Training Center Data Found.", HttpStatus.OK);
 		}
 		else {
 			return new ResponseEntity<>("No Training Centers Found!", HttpStatus.NOT_FOUND);
 		}
-		
-		
 	}
 	
-//	@RequestMapping(value="/save-center", method=RequestMethod.POST)
+
 	@PostMapping(value="/save-center")
 	public ResponseEntity<?> saveCenterDetails(@RequestBody TrainingCenterModel CenterDetails) {
 		try {
-			System.out.println(CenterDetails.getCenterCode());
-			CenterDetails.setCreatedOn(new Date(System.currentTimeMillis()));
-			repository.save(CenterDetails);
+			centerService.createTrainingCenter(CenterDetails);
 			return new ResponseEntity<>(CenterDetails, HttpStatus.CREATED);
 		}
-		catch (Exception e) {
-			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-			
+		catch (ConstraintViolationException ce) {
+			return new ResponseEntity<>(ce.getMessage(), HttpStatus.BAD_REQUEST);
+		}
+		catch (ExceptionClass ce) {
+			return new ResponseEntity<>(ce.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
 		}
 	}
 	
 	@RequestMapping("/{CenterCode}")
 	public ResponseEntity<?>  getCenterByCode(@PathVariable("CenterCode") String CenterCode) {
-//		return repository.findByCenterCode(CenterCode);
-		return new ResponseEntity<>(repository.findByCenterCode(CenterCode), HttpStatus.OK);
+		Optional<TrainingCenterModel> centerDetails = repository.findByCenterCode(CenterCode);
+		if (centerDetails.isPresent()) {
+			return new ResponseEntity<>(centerDetails, HttpStatus.OK);
+		}
+		else {
+			return new ResponseEntity<>("Center with the code " + CenterCode + " does not exist.", HttpStatus.NOT_FOUND);
+		}
+
 	}
 }

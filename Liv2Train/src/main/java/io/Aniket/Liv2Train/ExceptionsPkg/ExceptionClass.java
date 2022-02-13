@@ -7,7 +7,7 @@ public class ExceptionClass extends Exception {
 	 */
 	private static final long serialVersionUID = 1L;
 	
-	ExceptionClass(String message){
+	public ExceptionClass(String message){
 		super(message);
 	}
 	
@@ -15,8 +15,8 @@ public class ExceptionClass extends Exception {
 		return "Center with code " + CenterCode + " not found!";
 	}
 	
-	public static String AlreadyExistsException() {
-		return "Center with this Center Code already exists!";
+	public static String AlreadyExistsException(String CenterCode) {
+		return "Center with the Center Code "+ CenterCode +" already exists!";
 	}
 	
 
