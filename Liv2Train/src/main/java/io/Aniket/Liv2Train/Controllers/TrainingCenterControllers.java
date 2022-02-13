@@ -44,7 +44,7 @@ public class TrainingCenterControllers {
 			return new ResponseEntity<>(allCenters, HttpStatus.OK);
 		}
 		else if(allCenters.size() == 0) {
-			return new ResponseEntity<>("No Training Center Data Found.", HttpStatus.OK);
+			return new ResponseEntity<>(allCenters, HttpStatus.OK);
 		}
 		else {
 			return new ResponseEntity<>("No Training Centers Found!", HttpStatus.NOT_FOUND);
